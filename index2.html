@@ -1,84 +1,118 @@
 <!doctype html>
-<html lang="en">
+<html>
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
-    <title>海量点</title>
+    <title>标注和标注图层-海量点</title>
     <link rel="stylesheet" href="https://a.amap.com/jsapi_demos/static/demo-center/css/demo-center.css"/>
     <style>
         html, body, #container {
             height: 100%;
             width: 100%;
+            margin: 0;
         }
-
-        .input-card .btn {
-            margin-right: 1.2rem;
-            width: 9rem;
+        .amap-info-window{
+            width: 150px;
+            background: #fff;
+            border-radius: 3px;
+            padding: 3px 7px;
+            box-shadow: 0 2px 6px 0 rgba(114, 124, 245, .5);
+            position: relative;
         }
-
-        .input-card .btn:last-child {
-            margin-right: 0;
+        .amap-info-sharp{
+            position: absolute;
+            top: 21px;
+            bottom: 0;
+            left: 50%;
+            margin-left: -8px;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-top: 8px solid #fff;
         }
     </style>
 </head>
 <body>
-<div id="container" class="map" tabindex="0"></div>
-<div class="input-card">
-    <h4>海量点效果切换</h4>
-    <div class="input-item">
-        <input type="button" class="btn" value="单一图标" onclick='setStyle(0)'/>
-        <input type="button" class="btn" value="多个图标" onclick='setStyle(1)'/>
-    </div>
-</div>
-<script type="text/javascript" src='https://a.amap.com/jsapi_demos/static/citys.js'></script>
+<div id="container"></div>
+
+<div class="info">
+    海量点展示: 30000
+ </div>
 <script type="text/javascript"
-        src="https://webapi.amap.com/maps?v=1.4.15&key=d8130f865a429d49a79d44397c77c4ff"></script>
+        src="https://webapi.amap.com/maps?v=2.0&key=d8130f865a429d49a79d44397c77c4ff"></script>
+<script type="text/javascript" src="https://a.amap.com/jsapi_demos/static/demo-center/data/mock_position.js"></script>
 <script type="text/javascript">
     var map = new AMap.Map('container', {
-        zoom: 4,
-        center: [102.342785, 35.312316]
+        zoom: 9,
+        viewMode:'3D',
+        center: [116.12, 40.11],
+        mapStyle: 'amap://styles/whitesmoke',
+        showLabel: false,
+        showIndoorMap: false,
     });
 
-    var style = [{
-        url: 'https://a.amap.com/jsapi_demos/static/images/mass0.png',
-        anchor: new AMap.Pixel(6, 6),
-        size: new AMap.Size(11, 11)
-    }, {
-        url: 'https://a.amap.com/jsapi_demos/static/images/mass1.png',
-        anchor: new AMap.Pixel(4, 4),
-        size: new AMap.Size(7, 7)
-    }, {
-        url: 'https://a.amap.com/jsapi_demos/static/images/mass2.png',
-        anchor: new AMap.Pixel(3, 3),
-        size: new AMap.Size(5, 5)
-    }
-    ];
+    map.on('complete', function () {
+        // 创建 AMap.LabelsLayer 图层
+        var layer = new AMap.LabelsLayer({
+            zooms: [3, 20],
+            zIndex: 1000,
+            collision: false
+        });
 
-    var mass = new AMap.MassMarks(citys, {
-        opacity: 0.8,
-        zIndex: 111,
-        cursor: 'pointer',
-        style: style
-    });
+        // 将图层添加到地图
+        map.add(layer);
 
-    var marker = new AMap.Marker({content: ' ', map: map});
+        var markers = [];
+        // var positions = Positions.slice(0, 3E4);
+        var Positions = [["116.441504","40.031386"],["116.466426","39.971294"],["116.443838","39.723097"],]
 
-    mass.on('mouseover', function (e) {
+        var icon = {
+            type: 'image',
+            image: 'https://webapi.amap.com/theme/v1.3/markers/n/mark_b.png',
+            size: [6, 9],
+            anchor: 'bottom-center',
+        };
 
-        marker.setPosition(e.data.lnglat);
-        marker.setLabel({content: e.data.name})
-    });
+        for (var i = 0; i < positions.length; i++) {
+            var curPosition = positions[i];
+            var curData = {
+                position: curPosition,
+                icon
+            };
 
-    mass.setMap(map);
+            var labelMarker = new AMap.LabelMarker(curData);
 
-    function setStyle(multiIcon) {
-        if (multiIcon) {
-            mass.setStyle(style);
-        } else {
-            mass.setStyle(style[2]);
+            markers.push(labelMarker);
+
+            // 给marker绑定事件
+            labelMarker.on('mouseover', function(e){
+                var position = e.data.data && e.data.data.position;
+
+                if(position){
+                    normalMarker.setContent(
+                        '<div class="amap-info-window">'
+                            + position +
+                            '<div class="amap-info-sharp"></div>' +
+                        '</div>');
+                    normalMarker.setPosition(position);
+                    map.add(normalMarker);
+                }
+            });
+
+            labelMarker.on('mouseout', function(){
+                map.remove(normalMarker);
+            });
         }
-    }
+
+        // 一次性将海量点添加到图层
+        layer.add(markers);
+
+        // 普通点
+        var normalMarker = new AMap.Marker({
+            anchor: 'bottom-center',
+            offset: [0, -15],
+        });
+    });
 </script>
 </body>
 </html>
