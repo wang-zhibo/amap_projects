@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>高德地图 – 经纬度打点</title>
+    <script src="https://webapi.amap.com/maps?v=1.4.15&key=d8130f865a429d49a79d44397c77c4ff"></script>
+    <style>
+        html, body, #container { margin: 0; height: 100%; }
+    </style>
+</head>
+<body>
+
+    <div id="container"></div>
+
+    <script>
+
+        // const LNG = 108.8480230;   // 经度
+        // const LAT = 34.3996740;     // 纬度
+        const LNG = 108.84163836955808;   // 经度
+        const LAT = 34.393352468208555;     // 纬度
+        const ZOOM = 16;          // 初始缩放级别
+
+        /* ====  初始化地图 ==== */
+        const map = new AMap.Map('container', {
+            zoom: ZOOM,
+            center: [LNG, LAT],
+            viewMode: '2D'
+        });
+
+        /* ====  添加 Marker ==== */
+        const marker = new AMap.Marker({
+            position: new AMap.LngLat(LNG, LAT),
+            title: '目标位置',
+            icon: new AMap.Icon({
+                image: 'ding.png',
+                imageSize: new AMap.Size(51, 51)
+            })
+        });
+        map.add(marker);
+    </script>
+</body>
+</html>
